@@ -1,7 +1,6 @@
 'use strict'
 
 const inquirer = require('inquirer')
-const _cliProgress = require('cli-progress')
 const Bot = require('./Bot')
 
 class User {
@@ -17,6 +16,40 @@ class User {
       RADIAL: 'Radial',
       AERONAUTICAL: 'Aeronautical'
     }
+
+    this.taskLibrary = [
+      {
+        description: 'do the dishes',
+        eta: 1000,
+      },{
+        description: 'sweep the house',
+        eta: 3000,
+      },{
+        description: 'do the laundry',
+        eta: 1000,
+      },{
+        description: 'take out the recycling',
+        eta: 4000,
+      },{
+        description: 'make a sammich',
+        eta: 7000,
+      },{
+        description: 'mow the lawn',
+        eta: 2000,
+      },{
+        description: 'rake the leaves',
+        eta: 1800,
+      },{
+        description: 'give the dog a bath',
+        eta: 1450,
+      },{
+        description: 'bake some cookies',
+        eta: 8000,
+      },{
+        description: 'wash the car',
+        eta: 2000,
+      },
+    ]
 
     this.usernamePrompt()
   }
@@ -61,6 +94,18 @@ class User {
     })
   }
 
+  selectTasks (bot) {
+    if (!bot.assignedTasks.length) {
+      let possibleTasks = [...this.taskLibrary]
+      let tasks = []
+      while (tasks.length < 5) {
+        tasks.push(possibleTasks.splice(Math.floor(Math.random() * possibleTasks.length), 1)[0])
+        tasks[tasks.length - 1].timeToComplete = bot.timeToComplete(tasks[tasks.length - 1].eta)
+      }
+      bot.assignedTasks = tasks
+    }
+  }
+
   chooseBotToWork () {
     let ownedBots = this.getBotNames()
     inquirer
@@ -75,7 +120,9 @@ class User {
       .then(answer => {
         this.bots.forEach((bot) => {
           if (bot.name === answer.botType) {
-            bot.assignTasks()
+            if (!bot.assignedTasks.length) {
+              this.selectTasks(bot)
+            }
             bot.work()
           }
         })
@@ -89,7 +136,14 @@ class User {
           type: 'list',
           name: 'main',
           message: "What would you like to do next?",
-          choices: ["Put a bot to work", "Create a new bot", "List available bots", "Exit"]
+          choices: [
+            "Put a bot to work",
+            "Create a new bot",
+            "Decommission a bot",
+            "List owned bots",
+            new inquirer.Separator(),
+            "Exit"
+          ]
         }
       ])
       .then(answer => {
@@ -97,7 +151,7 @@ class User {
           case "Create a new bot":
             this.createBot()
             break
-          case "List available bots":
+          case "List owned bots":
             console.log("")
             this.bots.forEach((bot) => {
               console.log(bot.name)

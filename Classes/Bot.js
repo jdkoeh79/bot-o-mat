@@ -12,55 +12,10 @@ class Bot {
     this.owner = user.name
     this.name = name
     this.assignedTasks = []
-    this.taskLibrary = [
-      {
-        description: 'do the dishes',
-        eta: 1000,
-      },{
-        description: 'sweep the house',
-        eta: 3000,
-      },{
-        description: 'do the laundry',
-        eta: 1000,
-      },{
-        description: 'take out the recycling',
-        eta: 4000,
-      },{
-        description: 'make a sammich',
-        eta: 7000,
-      },{
-        description: 'mow the lawn',
-        eta: 2000,
-      },{
-        description: 'rake the leaves',
-        eta: 1800,
-      },{
-        description: 'give the dog a bath',
-        eta: 1450,
-      },{
-        description: 'bake some cookies',
-        eta: 8000,
-      },{
-        description: 'wash the car',
-        eta: 2000,
-      },
-    ]
-
-    this.assignTasks()
   }
 
-
-  assignTasks () {
-    if (!this.assignedTasks.length) {
-      let possibleTasks = [...this.taskLibrary]
-      let tasks = []
-      while (tasks.length < 5) {
-        tasks.push(possibleTasks.splice(Math.floor(Math.random() * possibleTasks.length), 1)[0])
-        tasks[tasks.length - 1].timeToComplete = this.timeToComplete(tasks[tasks.length - 1].eta)
-      }
-      this.assignedTasks = tasks
-      // console.log(tasks)
-    }
+  fetchAssignment () {
+    this.assignedTasks = this.user.selectTasks(this)
   }
 
   // vary ETA by +/- 10%
@@ -86,7 +41,6 @@ class Bot {
   work () {
     let task = this.assignedTasks.shift()
     console.log(`\nStarting task: ${task.description}. ETA: ${task.eta}ms`)
-    // console.log(`ETA: ${task.eta}ms`)
     this.progress(task)
     this.doTask(task).then((res) => {
       const performance = task.timeToComplete - task.eta

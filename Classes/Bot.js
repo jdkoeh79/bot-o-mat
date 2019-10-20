@@ -1,135 +1,16 @@
-
 'use strict'
-// learn what IIFE
-// docker run --rm -it -v "$PWD:/botomat" node:12.12 bash
 
-console.log("Loading Bot-O-Mat, one moment please...")
-
-const inquirer = require('inquirer');
 const _progress = require('cli-progress');
-const clc = require("cli-color");
+const clc = require('cli-color');
 
 const red = clc.red
 const green = clc.green
-
-class User {
-  constructor() {
-    this.name = ""
-    this.bots = []
-
-    this.availableBots = {
-      UNIPEDAL: 'Unipedal',
-      BIPEDAL: 'Bipedal',
-      QUADRUPEDAL: 'Quadrupedal',
-      ARACHNID: 'Arachnid',
-      RADIAL: 'Radial',
-      AERONAUTICAL: 'Aeronautical'
-    }
-
-    this.usernamePrompt()
-  }
-
-  usernamePrompt () {
-    inquirer
-      .prompt([
-        {
-          type: 'input',
-          name: 'username',
-          message: "Welcome to Bot-O-Mat! What's your name?"
-        }
-      ])
-      .then(answers => {
-        const username = answers.username
-        console.log(`\nWelcome, ${username}! Let's create your first bot!\n`)
-        this.name = username
-        this.createBot()
-      })
-  }
-
-  createBot () {
-    inquirer
-      .prompt([
-        {
-          type: 'list',
-          name: 'botType',
-          message: 'What type of bot would you like to create?',
-          choices: Object.values(user.availableBots)
-        }
-      ])
-      .then(answer => {
-        let bot = new Bot(this, answer.botType)
-        this.bots.push(bot)
-        this.mainPrompt()
-      })
-  }
-
-  getBotNames () {
-    return this.bots.map((bot) => {
-      return bot.name
-    })
-  }
-
-  chooseBotToWork () {
-    let ownedBots = this.getBotNames()
-    inquirer
-      .prompt([
-        {
-          type: 'list',
-          name: 'botType',
-          message: 'Which bot will you put to work?',
-          choices: [...ownedBots]
-        }
-      ])
-      .then(answer => {
-        this.bots.forEach((bot) => {
-          if (bot.name === answer.botType) {
-            bot.assignTasks()
-            bot.work()
-          }
-        })
-      })
-  }
-
-  mainPrompt () {
-    inquirer
-      .prompt([
-        {
-          type: 'list',
-          name: 'main',
-          message: "What would you like to do next?",
-          choices: ["Put a bot to work", "Create a new bot", "List available bots", "Exit"]
-        }
-      ])
-      .then(answer => {
-        switch (answer.main) {
-          case "Create a new bot":
-            this.createBot()
-            break
-          case "List available bots":
-            console.log("")
-            this.bots.forEach((bot) => {
-              console.log(bot.name)
-            })
-            console.log("")
-            this.mainPrompt()
-            break
-          case "Put a bot to work":
-            this.chooseBotToWork()
-            break
-          case "Exit":
-            process.exit()
-            break
-        }
-      })
-  }
-}
 
 class Bot {
   constructor(user, name) {
     this.user = user
     this.owner = user.name
     this.name = name
-    this.durability = 100
     this.assignedTasks = []
     this.taskLibrary = [
       {
@@ -170,7 +51,7 @@ class Bot {
 
 
   assignTasks () {
-    if (!this.assignedTasks) {
+    if (!this.assignedTasks.length) {
       let possibleTasks = [...this.taskLibrary]
       let tasks = []
       while (tasks.length < 5) {
@@ -199,7 +80,7 @@ class Bot {
 
   allDone () {
     console.log("All tasks complete!\n")
-    user.mainPrompt(this.user)
+    this.user.mainPrompt(this.user)
   }
 
   work () {
@@ -251,6 +132,4 @@ class Bot {
   }
 }
 
-process.stdout.write('\x1Bc')
-// the User constructor fires off the first prompt, starting the program
-let user = new User()
+module.exports = Bot

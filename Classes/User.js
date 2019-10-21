@@ -6,9 +6,9 @@ const Bot = require('./Bot')
 class User {
   constructor() {
     this.name = ""
-    this.bots = []
+    this.ownedBots = []
 
-    this.availableBots = {
+    this.allBotTypes = {
       UNIPEDAL: 'Unipedal',
       BIPEDAL: 'Bipedal',
       QUADRUPEDAL: 'Quadrupedal',
@@ -16,6 +16,8 @@ class User {
       RADIAL: 'Radial',
       AERONAUTICAL: 'Aeronautical'
     }
+
+    this.availableBots = [...Object.values(this.allBotTypes)]
 
     this.taskLibrary = [
       {
@@ -72,20 +74,28 @@ class User {
   }
 
   createBot () {
-    inquirer
-      .prompt([
-        {
-          type: 'list',
-          name: 'botType',
-          message: 'What type of bot would you like to create?',
-          choices: Object.values(this.availableBots)
-        }
-      ])
-      .then(answer => {
-        let bot = new Bot(this, answer.botType)
-        this.bots.push(bot)
-        this.mainPrompt()
-      })
+    if (!this.availableBots.length) {
+      console.log("You already own one of each bot type.")
+      this.mainPrompt()
+    } else {
+      inquirer
+        .prompt([
+          {
+            type: 'list',
+            name: 'botType',
+            message: 'What type of bot would you like to create?',
+            choices: Object.values(this.availableBots)
+          }
+        ])
+        .then(answer => {
+          let bot = new Bot(this, answer.botType)
+          this.ownedBots.push(bot.name)
+          this.availableBots = this.availableBots.filter((bot) => {
+            return !this.ownedBots.includes(bot)
+          })
+          this.mainPrompt()
+        })
+    }
   }
 
   getBotNames () {
@@ -118,7 +128,7 @@ class User {
         }
       ])
       .then(answer => {
-        this.bots.forEach((bot) => {
+        this.ownedBots.forEach((bot) => {
           if (bot.name === answer.botType) {
             if (!bot.assignedTasks.length) {
               this.selectTasks(bot)
@@ -153,8 +163,8 @@ class User {
             break
           case "List owned bots":
             console.log("")
-            this.bots.forEach((bot) => {
-              console.log(bot.name)
+            this.ownedBots.forEach((bot) => {
+              console.log(bot)
             })
             console.log("")
             this.mainPrompt()

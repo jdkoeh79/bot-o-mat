@@ -6,7 +6,7 @@ const Bot = require('./Bot')
 class User {
   constructor() {
     this.name = ""
-    this.ownedBots = []
+    this.ownedBots = {}
 
     this.allBotTypes = {
       UNIPEDAL: 'Unipedal',
@@ -73,35 +73,49 @@ class User {
       })
   }
 
+  // availableBots () {
+  //   let availableBots = [...Object.values(this.allBotTypes)]
+  //   let promptOptions = availableBots.filter((type) => {
+  //     return this.ownedBots[type] === undefined
+  //   })
+  //   return promptOptions
+  // }
+
   createBot () {
-    if (!this.availableBots.length) {
-      console.log("You already own one of each bot type.")
+    let availableBots = [...Object.values(this.allBotTypes)]
+    let promptOptions = availableBots.filter((type) => {
+      return this.ownedBots[type] === undefined
+    })
+    if (!promptOptions.length) {
+      console.log("\nYou already own one of each bot type.\n")
       this.mainPrompt()
     } else {
+      if (Object.keys(this.ownedBots).length) {
+        promptOptions.push('I have enough bots right now')
+      }
       inquirer
         .prompt([
           {
             type: 'list',
             name: 'botType',
             message: 'What type of bot would you like to create?',
-            choices: Object.values(this.availableBots)
+            choices: [...promptOptions]
           }
         ])
         .then(answer => {
-          let bot = new Bot(this, answer.botType)
-          this.ownedBots.push(bot.name)
-          this.availableBots = this.availableBots.filter((bot) => {
-            return !this.ownedBots.includes(bot)
-          })
-          this.mainPrompt()
+          if (answer.botType === 'I have enough bots right now') {
+            this.mainPrompt()
+          } else {
+            let bot = new Bot(this, answer.botType)
+            this.ownedBots[answer.botType] = bot
+            this.mainPrompt()
+          }
         })
     }
   }
 
   getBotNames () {
-    return this.bots.map((bot) => {
-      return bot.name
-    })
+    return [...Object.keys(this.ownedBots)]
   }
 
   selectTasks (bot) {
@@ -117,25 +131,32 @@ class User {
   }
 
   chooseBotToWork () {
-    let ownedBots = this.getBotNames()
+    let promptOptions = this.getBotNames()
+    promptOptions.push('I want to do something else')
     inquirer
       .prompt([
         {
           type: 'list',
           name: 'botType',
           message: 'Which bot will you put to work?',
-          choices: [...ownedBots]
+          choices: promptOptions
         }
       ])
       .then(answer => {
-        this.ownedBots.forEach((bot) => {
-          if (bot.name === answer.botType) {
-            if (!bot.assignedTasks.length) {
-              this.selectTasks(bot)
+        if (answer.botType === 'I want to do something else') {
+          this.mainPrompt()
+        } else {
+          let botNames = this.getBotNames()
+          botNames.forEach((name) => {
+            if (name === answer.botType) {
+              let bot = this.ownedBots[name]
+              if (!bot.assignedTasks.length) {
+                this.selectTasks(bot)
+              }
+              bot.work()
             }
-            bot.work()
-          }
-        })
+          })
+        }
       })
   }
 
@@ -163,8 +184,8 @@ class User {
             break
           case "List owned bots":
             console.log("")
-            this.ownedBots.forEach((bot) => {
-              console.log(bot)
+            this.getBotNames().forEach((name) => {
+              console.log(name)
             })
             console.log("")
             this.mainPrompt()

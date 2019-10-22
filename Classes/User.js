@@ -141,24 +141,26 @@ class User {
   }
 
   selectTasks (bot) {
-    if (!bot.assignedTasks.length) {
-      let possibleTasks = [...this.taskLibrary]
-      let tasks = []
-      let totalTimeToComplete = 0
-      while (tasks.length < 5) {
-        tasks.push(possibleTasks.splice(Math.floor(Math.random() * possibleTasks.length), 1)[0])
-        let timeToComplete = bot.timeToComplete(tasks[tasks.length - 1].eta)
-        tasks[tasks.length - 1].timeToComplete = timeToComplete
-        totalTimeToComplete += timeToComplete
-      }
-      let totalETA = 0
-      tasks.forEach((task) => {
-        totalETA += task.eta
-      })
-      bot.assignedTasks = tasks
-      let overallPerformance = totalETA - totalTimeToComplete
-      bot.performance = overallPerformance
+    let possibleTasks = [...this.taskLibrary]
+    let tasks = []
+    let totalETA = 0
+    let totalTimeToComplete = 0
+    while (tasks.length < 5) {
+      tasks.push(
+        possibleTasks.splice(
+          Math.floor(Math.random() * possibleTasks.length),
+          1
+        )[0]
+      )
+      let eta = tasks[tasks.length - 1].eta
+      let timeToComplete = bot.timeToComplete(eta)
+      tasks[tasks.length - 1].timeToComplete = timeToComplete
+      totalETA += eta
+      totalTimeToComplete += timeToComplete
     }
+    bot.assignedTasks = tasks
+    let overallPerformance = totalETA - totalTimeToComplete
+    bot.performance = overallPerformance
   }
 
   chooseBotToWork () {

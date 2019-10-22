@@ -53,45 +53,66 @@ class User {
       },
     ]
 
-    this.usernamePrompt()
+    this.start()
   }
 
-  usernamePrompt () {
+  start () {
+    // this robot came from https://www.asciiart.eu/electronics/robots - Author unknown.
+    console.log("                 __")
+    console.log("         _(\\    |@@|")
+    console.log("        (__/\\__ \\--/ __")
+    console.log("           \\___|----|  |   __")
+    console.log("               \\ }{ /\\ )_ / _\\")
+    console.log("               /\\__/\\ \\__O (__")
+    console.log("              (--/\\--)    \\__/")
+    console.log("              _)(  )(_")
+    console.log("             \`---''---\`")
+
+    console.log("      ╔╗ ╔═╗╔╦╗  ╔═╗   ╔╦╗╔═╗╔╦╗")
+    console.log("      ╠╩╗║ ║ ║───║ ║───║║║╠═╣ ║ ")
+    console.log("      ╚═╝╚═╝ ╩   ╚═╝   ╩ ╩╩ ╩ ╩ ")
+    console.log("-- A JavaScript Bot Task Simulator --\n")
+    this.usernamePrompt("Hi, what's your name?")
+  }
+
+  usernamePrompt (message) {
     inquirer
       .prompt([
         {
           type: 'input',
           name: 'username',
-          message: "Welcome to Bot-O-Mat! What's your name?"
+          message
         }
       ])
-      .then(answers => {
-        const username = answers.username
-        console.log(`\nWelcome, ${username}! Let's create your first bot!\n`)
-        this.name = username
-        this.createBot()
+      .then(answer => {
+        const username = answer.username
+        if (!username.length) {
+          console.log(`\nSorry, I didn't catch that...\n`)
+          this.usernamePrompt("What's your name?")
+        } else {
+          console.log(`\nWelcome, ${username}! Let's create your first bot!\n`)
+          this.name = username
+          this.createBot()
+        }
       })
   }
 
-  // availableBots () {
-  //   let availableBots = [...Object.values(this.allBotTypes)]
-  //   let promptOptions = availableBots.filter((type) => {
-  //     return this.ownedBots[type] === undefined
-  //   })
-  //   return promptOptions
-  // }
-
-  createBot () {
+  availableBotsList () {
     let availableBots = [...Object.values(this.allBotTypes)]
     let promptOptions = availableBots.filter((type) => {
       return this.ownedBots[type] === undefined
     })
+    return promptOptions
+  }
+
+  createBot () {
+    let promptOptions = this.availableBotsList()
     if (!promptOptions.length) {
       console.log("\nYou already own one of each bot type.\n")
       this.mainPrompt()
     } else {
       if (Object.keys(this.ownedBots).length) {
-        promptOptions.push('I have enough bots right now')
+        promptOptions.push('I have enough bots for now')
       }
       inquirer
         .prompt([
@@ -108,13 +129,14 @@ class User {
           } else {
             let bot = new Bot(this, answer.botType)
             this.ownedBots[answer.botType] = bot
+            console.log(`\nYou now own a shiny new ${bot.name} bot!\n`)
             this.mainPrompt()
           }
         })
     }
   }
 
-  getBotNames () {
+  ownedBotNames () {
     return [...Object.keys(this.ownedBots)]
   }
 
@@ -122,23 +144,74 @@ class User {
     if (!bot.assignedTasks.length) {
       let possibleTasks = [...this.taskLibrary]
       let tasks = []
+      let totalTimeToComplete = 0
       while (tasks.length < 5) {
         tasks.push(possibleTasks.splice(Math.floor(Math.random() * possibleTasks.length), 1)[0])
-        tasks[tasks.length - 1].timeToComplete = bot.timeToComplete(tasks[tasks.length - 1].eta)
+        let timeToComplete = bot.timeToComplete(tasks[tasks.length - 1].eta)
+        tasks[tasks.length - 1].timeToComplete = timeToComplete
+        totalTimeToComplete += timeToComplete
       }
+      let totalETA = 0
+      tasks.forEach((task) => {
+        totalETA += task.eta
+      })
       bot.assignedTasks = tasks
+      let overallPerformance = totalETA - totalTimeToComplete
+      bot.performance = overallPerformance
     }
   }
 
   chooseBotToWork () {
-    let promptOptions = this.getBotNames()
+    let promptOptions = this.ownedBotNames()
+    if (!promptOptions.length) {
+      console.log("\nOops, you don't own any bots. Go create one!\n")
+      this.mainPrompt()
+    // } else if (promptOptions.length === 1) {
+    //   let name = this.getOwnedBotNames()[0]
+    //   let bot = this.ownedBots[name]
+      // if (!bot.assignedTasks.length) {
+      //   this.selectTasks(bot)
+      // }
+      // bot.work()
+    } else {
+      promptOptions.push('I want to do something else')
+      inquirer
+        .prompt([
+          {
+            type: 'list',
+            name: 'botType',
+            message: 'Which bot will you put to work?',
+            choices: promptOptions
+          }
+        ])
+        .then(answer => {
+          if (answer.botType === 'I want to do something else') {
+            this.mainPrompt()
+          } else {
+            let botNames = this.ownedBotNames()
+            botNames.forEach((name) => {
+              if (name === answer.botType) {
+                let bot = this.ownedBots[name]
+                if (!bot.assignedTasks.length) {
+                  this.selectTasks(bot)
+                }
+                bot.work()
+              }
+            })
+          }
+        })
+    }
+  }
+
+  decommission () {
+    let promptOptions = this.ownedBotNames()
     promptOptions.push('I want to do something else')
     inquirer
       .prompt([
         {
           type: 'list',
           name: 'botType',
-          message: 'Which bot will you put to work?',
+          message: 'Which bot would you like to decommission?',
           choices: promptOptions
         }
       ])
@@ -146,14 +219,12 @@ class User {
         if (answer.botType === 'I want to do something else') {
           this.mainPrompt()
         } else {
-          let botNames = this.getBotNames()
+          let botNames = this.ownedBotNames()
           botNames.forEach((name) => {
             if (name === answer.botType) {
-              let bot = this.ownedBots[name]
-              if (!bot.assignedTasks.length) {
-                this.selectTasks(bot)
-              }
-              bot.work()
+              delete this.ownedBots[name]
+              console.log(`\nYour ${name} bot has been converted to scrap metal.\n`)
+              this.mainPrompt()
             }
           })
         }
@@ -182,11 +253,19 @@ class User {
           case "Create a new bot":
             this.createBot()
             break
+          case "Decommission a bot":
+            this.decommission()
+            break
           case "List owned bots":
+            let ownedBotNames = this.ownedBotNames()
             console.log("")
-            this.getBotNames().forEach((name) => {
-              console.log(name)
-            })
+            if (!ownedBotNames.length) {
+              console.log("Oops, you don't have any bots. Go create one!")
+            } else {
+              ownedBotNames.forEach((name) => {
+                console.log(name)
+              })
+            }
             console.log("")
             this.mainPrompt()
             break

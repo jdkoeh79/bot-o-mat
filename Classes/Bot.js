@@ -1,10 +1,11 @@
 'use strict'
 
-const _progress = require('cli-progress');
-const clc = require('cli-color');
+const _progress = require('cli-progress')
+const clc = require('cli-color')
 
 const red = clc.red
 const green = clc.green
+const yellow = clc.yellowBright
 
 class Bot {
   constructor(user, name) {
@@ -12,6 +13,7 @@ class Bot {
     this.owner = user.name
     this.name = name
     this.assignedTasks = []
+    this.performance = 0
   }
 
   fetchAssignment () {
@@ -34,21 +36,28 @@ class Bot {
   }
 
   allDone () {
-    console.log("All tasks complete!\n")
+    let ahead = (Math.sign(this.performance))
+    let aheadOrBehind = (ahead === 1) ? 'ahead of schedule!' : 'behind schedule.'
+    if (ahead) {
+      this.performance * -1
+    }
+    console.log(`\nYour ${this.name} bot completed all tasks ${Math.abs(this.performance)}ms ${aheadOrBehind}\n`)
     this.user.mainPrompt(this.user)
   }
 
   work () {
     let task = this.assignedTasks.shift()
-    console.log(`\nStarting task: ${task.description}. ETA: ${task.eta}ms`)
+    console.log(`\n${this.name} bot starting task: ${yellow(task.description)}. ETA: ${task.eta}ms`)
     this.progress(task)
-    this.doTask(task).then((res) => {
-      const performance = task.timeToComplete - task.eta
-      res += (performance > 0) ? ' (' + red('+') : ' ('
-      res += (performance > 0) ? `${red(performance + 'ms')}).` : `${green(performance + 'ms')}).`
-      console.log(res)
-      this.assignedTasks.length ? this.work() : this.allDone()
-    })
+    this.doTask(task)
+      .then((res) => {
+        const performance = task.timeToComplete - task.eta
+        res += (performance > 0) ? ' (' + red('+') : ' ('
+        res += (performance > 0) ? `${red(performance + 'ms')}).` : `${green(performance + 'ms')}).`
+        console.log(res)
+        this.assignedTasks.length ? this.work() : this.allDone()
+      })
+      .catch((err) => console.log(err))
   }
 
   progress(task){
@@ -72,7 +81,7 @@ class Bot {
 
         // update the bar value
         bar.update(value, {
-            speed: 'blah'
+            speed: 'ludicrous'
         })
 
         // set limit

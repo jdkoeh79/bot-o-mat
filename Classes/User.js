@@ -28,7 +28,7 @@ class User {
         eta: 3000,
       },{
         description: 'do the laundry',
-        eta: 1000,
+        eta: 10000,
       },{
         description: 'take out the recycling',
         eta: 4000,
@@ -37,19 +37,19 @@ class User {
         eta: 7000,
       },{
         description: 'mow the lawn',
-        eta: 2000,
+        eta: 20000,
       },{
         description: 'rake the leaves',
-        eta: 1800,
+        eta: 18000,
       },{
         description: 'give the dog a bath',
-        eta: 1450,
+        eta: 14500,
       },{
         description: 'bake some cookies',
         eta: 8000,
       },{
         description: 'wash the car',
-        eta: 2000,
+        eta: 20000,
       },
     ]
 
@@ -72,6 +72,7 @@ class User {
     console.log("      ╠╩╗║ ║ ║───║ ║───║║║╠═╣ ║ ")
     console.log("      ╚═╝╚═╝ ╩   ╚═╝   ╩ ╩╩ ╩ ╩ ")
     console.log("-- A JavaScript Bot Task Simulator --\n")
+
     this.usernamePrompt("Hi, what's your name?")
   }
 
@@ -124,7 +125,7 @@ class User {
           }
         ])
         .then(answer => {
-          if (answer.botType === 'I have enough bots right now') {
+          if (answer.botType === 'I have enough bots for now') {
             this.mainPrompt()
           } else {
             let bot = new Bot(this, answer.botType)
@@ -207,30 +208,35 @@ class User {
 
   decommission () {
     let promptOptions = this.ownedBotNames()
-    promptOptions.push('I want to do something else')
-    inquirer
-      .prompt([
-        {
-          type: 'list',
-          name: 'botType',
-          message: 'Which bot would you like to decommission?',
-          choices: promptOptions
-        }
-      ])
-      .then(answer => {
-        if (answer.botType === 'I want to do something else') {
-          this.mainPrompt()
-        } else {
-          let botNames = this.ownedBotNames()
-          botNames.forEach((name) => {
-            if (name === answer.botType) {
-              delete this.ownedBots[name]
-              console.log(`\nYour ${name} bot has been converted to scrap metal.\n`)
-              this.mainPrompt()
-            }
-          })
-        }
-      })
+    if (!promptOptions.length) {
+      console.log("\nOops, you don't own any bots. Go create one!\n")
+      this.mainPrompt()
+    } else {
+      promptOptions.push('I want to do something else')
+      inquirer
+        .prompt([
+          {
+            type: 'list',
+            name: 'botType',
+            message: 'Which bot would you like to decommission?',
+            choices: promptOptions
+          }
+        ])
+        .then(answer => {
+          if (answer.botType === 'I want to do something else') {
+            this.mainPrompt()
+          } else {
+            let botNames = this.ownedBotNames()
+            botNames.forEach((name) => {
+              if (name === answer.botType) {
+                delete this.ownedBots[name]
+                console.log(`\nYour ${name} bot has been converted to scrap metal.\n`)
+                this.mainPrompt()
+              }
+            })
+          }
+        })
+    }
   }
 
   mainPrompt () {
@@ -262,7 +268,7 @@ class User {
             let ownedBotNames = this.ownedBotNames()
             console.log("")
             if (!ownedBotNames.length) {
-              console.log("Oops, you don't have any bots. Go create one!")
+              console.log("You currently don't own any bots. Go create one!")
             } else {
               ownedBotNames.forEach((name) => {
                 console.log(name)

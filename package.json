@@ -2,20 +2,21 @@
   "name": "cli-bot-o-mat",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node ./dist/index.js",
+    "build": "rm -rf ./dist && tsc"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RedVentures22/bot-o-mat-jdkoeh79.git"
+    "url": "git+https://github.com/jdkoeh79/bot-o-mat.git"
   },
   "author": "Justin Koehler",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/RedVentures22/bot-o-mat-jdkoeh79/issues"
+    "url": "https://github.com/jdkoeh79/bot-o-mat/issues"
   },
-  "homepage": "https://github.com/RedVentures22/bot-o-mat-jdkoeh79#readme",
+  "homepage": "https://github.com/jdkoeh79/bot-o-mat#readme",
   "dependencies": {
     "cli-color": "^2.0.0",
     "cli-progress": "^3.3.1",

@@ -1,7 +1,7 @@
 'use strict'
 
-const _progress = require('cli-progress')
-const clc = require('cli-color')
+import _progress from 'cli-progress';
+import clc from 'cli-color';
 
 const red = clc.red
 const green = clc.green
@@ -95,4 +95,4 @@ class Bot {
   }
 }
 
-module.exports = Bot
+export default Bot;

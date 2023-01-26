@@ -1,7 +1,7 @@
 'use strict'
 
-const inquirer = require('inquirer')
-const Bot = require('./Bot')
+import inquirer from 'inquirer';
+import Bot from './Bot';
 
 class User {
   constructor() {
@@ -169,13 +169,6 @@ class User {
     if (!promptOptions.length) {
       console.log("\nOops, you don't own any bots. Go create one!\n")
       this.mainPrompt()
-    // } else if (promptOptions.length === 1) {
-    //   let name = this.getOwnedBotNames()[0]
-    //   let bot = this.ownedBots[name]
-      // if (!bot.assignedTasks.length) {
-      //   this.selectTasks(bot)
-      // }
-      // bot.work()
     } else {
       promptOptions.push('I want to do something else')
       inquirer
@@ -288,4 +281,4 @@ class User {
   }
 }
 
-module.exports = User
+export default User;
